@@ -1,10 +1,36 @@
-import express, { Application, Request, Response, NextFunction } from "express";
+import express from "express";
+import mongoose from "mongoose";
+import "dotenv/config";
+import helmet from "helmet";
+import morgan from "morgan";
+import usersRouter from "./routes/usersRouter";
+import authRouter from "./routes/authRouter";
 
-// Server setup
+const app: express.Application = express();
+
+// Middleware
+app.use(express.json());
+app.use(helmet());
+app.use(morgan("common"));
+
+// DB connection
+const DB_URI = process.env.DB_URI;
 const PORT = 3000;
-const app: Application = express();
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
 
-app.get("/", (req: Request, res: Response) => {
-  res.send("hello");
+mongoose
+  .connect(`${DB_URI}`, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+    useCreateIndex: true,
+  })
+  .then(() => {
+    app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+  })
+  .catch((err) => console.log(err));
+
+// Routes
+app.get("/", (req: express.Request, res: express.Response) => {
+  res.send("Hello from home");
 });
+app.use(usersRouter);
+app.use(authRouter);
