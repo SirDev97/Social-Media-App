@@ -1,7 +1,7 @@
-import { Document, Schema, model } from "mongoose";
+import mongoose, { Document, Schema, model } from "mongoose";
 import bcrypt from "bcrypt";
 
-interface User extends Document {
+interface UserDocument extends Document {
   username: string;
   email: string;
   password: string;
@@ -12,7 +12,11 @@ interface User extends Document {
   isAdmin: boolean;
 }
 
-const userSchema = new Schema<User>(
+interface User extends mongoose.Model<UserDocument> {
+  login(email: string, password: string): UserDocument;
+}
+
+const userSchema = new Schema<UserDocument>(
   {
     username: {
       type: String,
@@ -56,10 +60,22 @@ const userSchema = new Schema<User>(
   { timestamps: true }
 );
 
-userSchema.pre("save", async function (next) {
+userSchema.pre<UserDocument>("save", async function (next) {
   const salt = await bcrypt.genSalt();
   this.password = await bcrypt.hash(this.password, salt);
   next();
 });
 
-export default model("user", userSchema);
+userSchema.statics.login = async function (email, password) {
+  const user = await this.findOne({ email });
+  if (user) {
+    const auth = await bcrypt.compare(password, user.password);
+    if (auth) {
+      return user;
+    }
+    throw Error("incorrect password");
+  }
+  throw Error("incorrect email");
+};
+
+export default model<UserDocument, User>("user", userSchema);

@@ -1,4 +1,4 @@
-import express from "express";
+import express, { Application, Request, Response } from "express";
 import mongoose from "mongoose";
 import "dotenv/config";
 import helmet from "helmet";
@@ -6,7 +6,7 @@ import morgan from "morgan";
 import usersRouter from "./routes/usersRouter";
 import authRouter from "./routes/authRouter";
 
-const app: express.Application = express();
+const app: Application = express();
 
 // Middleware
 app.use(express.json());
@@ -29,7 +29,7 @@ mongoose
   .catch((err) => console.log(err));
 
 // Routes
-app.get("/", (req: express.Request, res: express.Response) => {
+app.get("/", (req: Request, res: Response) => {
   res.send("Hello from home");
 });
 app.use(usersRouter);
