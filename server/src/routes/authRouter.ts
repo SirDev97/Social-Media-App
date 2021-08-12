@@ -3,27 +3,56 @@ import User from "../models/User";
 
 const authRouter = Router();
 
+// Errors
+const handleErrors = (err: any) => {
+  console.log(err.message, err.code);
+  let errors: any = { username: "", email: "", password: "" };
+
+  if (err.message === "incorrect email") {
+    errors.email = "Incorrect email";
+  }
+
+  if (err.message === "incorrect password") {
+    errors.password = "Incorrect password";
+  }
+
+  if (err.code === 11000) {
+    errors.email = "Email is already in use";
+    return errors;
+  }
+
+  if (err.message.includes("user validation failed")) {
+    Object.values(err.errors).forEach((error: any) => {
+      console.log(error.properties.message);
+      errors[error.properties.path] = error.properties.message;
+    });
+  }
+  return errors;
+};
+
 // Signup
 authRouter.post("/signup", async (req: Request, res: Response) => {
   const { username, email, password } = req.body;
 
   try {
     const newUser = await User.create({ username, email, password });
-    res.status(200).json(newUser);
+    res.status(201).json(newUser);
   } catch (err) {
-    console.log(err);
+    const errors = handleErrors(err);
+    res.status(400).json({ errors });
   }
 });
 
 // Login
-authRouter.post("/login", async (req, res) => {
+authRouter.post("/login", async (req: Request, res: Response) => {
   const { email, password } = req.body;
 
   try {
     const user = await User.login(email, password);
     res.status(200).json({ user: user._id });
   } catch (err) {
-    res.status(400).json({});
+    const errors = handleErrors(err);
+    res.status(400).json({ errors });
   }
 });
 

@@ -1,5 +1,6 @@
 import mongoose, { Document, Schema, model } from "mongoose";
 import bcrypt from "bcrypt";
+import isEmail from "validator/lib/isEmail";
 
 interface UserDocument extends Document {
   username: string;
@@ -20,21 +21,21 @@ const userSchema = new Schema<UserDocument>(
   {
     username: {
       type: String,
-      required: true,
+      required: [true, "Please enter a username"],
       unique: true,
-      minLength: 3,
-      maxLength: 20,
+      minLength: [3, "Username is too short"],
+      maxLength: [10, "Username is too long"],
     },
     email: {
       type: String,
-      required: true,
+      required: [true, "Please enter an email"],
       unique: true,
-      maxLength: 50,
+      validate: [isEmail, "Please enter a valid email"],
     },
     password: {
       type: String,
-      required: true,
-      minLength: 6,
+      required: [true, "Please enter a password"],
+      minLength: [8, "Password must be at least 8 characters long"],
     },
     profilePicture: {
       type: String,
@@ -60,13 +61,13 @@ const userSchema = new Schema<UserDocument>(
   { timestamps: true }
 );
 
-userSchema.pre<UserDocument>("save", async function (next) {
+userSchema.pre("save", async function (next) {
   const salt = await bcrypt.genSalt();
   this.password = await bcrypt.hash(this.password, salt);
   next();
 });
 
-userSchema.statics.login = async function (email, password) {
+userSchema.statics.login = async function (email: string, password: string) {
   const user = await this.findOne({ email });
   if (user) {
     const auth = await bcrypt.compare(password, user.password);
