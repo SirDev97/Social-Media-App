@@ -1,6 +1,7 @@
-import { Schema, model } from "mongoose";
+import { Document, Schema, model } from "mongoose";
+import bcrypt from "bcrypt";
 
-interface User {
+interface User extends Document {
   username: string;
   email: string;
   password: string;
@@ -54,5 +55,11 @@ const userSchema = new Schema<User>(
   },
   { timestamps: true }
 );
+
+userSchema.pre("save", async function (next) {
+  const salt = await bcrypt.genSalt();
+  this.password = await bcrypt.hash(this.password, salt);
+  next();
+});
 
 export default model("user", userSchema);
