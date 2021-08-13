@@ -5,8 +5,12 @@ const authRouter = Router();
 
 // Errors
 const handleErrors = (err: any) => {
-  console.log(err.message, err.code);
   let errors: any = { username: "", email: "", password: "" };
+
+  if (err.code === 11000) {
+    errors.username = "Username is already taken.";
+    errors.email = "Email is already in use";
+  }
 
   if (err.message === "incorrect email") {
     errors.email = "Incorrect email";
@@ -14,11 +18,6 @@ const handleErrors = (err: any) => {
 
   if (err.message === "incorrect password") {
     errors.password = "Incorrect password";
-  }
-
-  if (err.code === 11000) {
-    errors.email = "Email is already in use";
-    return errors;
   }
 
   if (err.message.includes("user validation failed")) {
