@@ -10,6 +10,11 @@ const app: Application = express();
 
 // Middleware
 app.use(express.json());
+app.use(
+  express.urlencoded({
+    extended: true,
+  })
+);
 app.use(helmet());
 app.use(morgan("common"));
 
@@ -22,6 +27,7 @@ mongoose
     useNewUrlParser: true,
     useUnifiedTopology: true,
     useCreateIndex: true,
+    useFindAndModify: false,
   })
   .then(() => {
     app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

@@ -11,6 +11,9 @@ interface UserDocument extends Document {
   followers: [];
   following: [];
   isAdmin: boolean;
+  desc: string;
+  city: string;
+  from: string;
 }
 
 interface User extends mongoose.Model<UserDocument> {
@@ -56,6 +59,18 @@ const userSchema = new Schema<UserDocument>(
     isAdmin: {
       type: Boolean,
       default: false,
+    },
+    desc: {
+      type: String,
+      maxLength: 50,
+    },
+    city: {
+      type: String,
+      maxLength: 20,
+    },
+    from: {
+      type: String,
+      maxLength: 20,
     },
   },
   { timestamps: true }
